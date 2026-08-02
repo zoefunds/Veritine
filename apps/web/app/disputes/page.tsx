@@ -4,7 +4,10 @@ import { Footer } from '../../components/layout/Footer';
 import { formatGen } from '../../lib/format-gen';
 import { apiFetch } from '../../lib/api-client';
 
-export const dynamic = 'force-dynamic';
+// Revalidated on the fetch level (see apiFetch) rather than forced fully
+// dynamic - a plain force-dynamic here meant every navigation was a full
+// uncached round trip to the API, which made this page feel slow.
+export const revalidate = 5;
 
 interface DisputeSummary {
   id: string;

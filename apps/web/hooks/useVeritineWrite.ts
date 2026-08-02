@@ -48,6 +48,7 @@ export function useVeritineWrite() {
         setStatus(result.succeeded ? 'success' : 'error');
         if (!result.succeeded) {
           setError('Transaction finalized but execution failed on-chain');
+          return null;
         }
         return submitted;
       } catch (err) {

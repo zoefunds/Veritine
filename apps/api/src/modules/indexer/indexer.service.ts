@@ -118,6 +118,19 @@ export class IndexerService {
     }
   }
 
+  /**
+   * Syncs a single dispute by contract id. Unlike syncDisputes(), this is
+   * bounded to exactly 2 RPC calls regardless of how many disputes exist,
+   * so it's safe to expose without the internal API key - used by the
+   * frontend right after a create_dispute (or position stake) write
+   * finalizes, so the new/updated dispute is visible immediately instead
+   * of waiting for the next 5-minute cron sync.
+   */
+  async syncOneDisputeById(id: number): Promise<void> {
+    const readClient = await this.getReadClient();
+    await this.syncOneDispute(readClient, id);
+  }
+
   private async syncOneDispute(readClient: VeritineReadClient, id: number): Promise<void> {
     const chainDispute = (await readClient.getDispute(id)) as unknown as ChainDispute;
 

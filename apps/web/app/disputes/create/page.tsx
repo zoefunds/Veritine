@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import { useVeritineWrite } from '../../../hooks/useVeritineWrite';
 import { parseGen } from '../../../lib/parse-gen';
+import { getVeritineReadClient } from '../../../lib/veritine-read-client';
+import { apiFetch } from '../../../lib/api-client';
 import { Navbar } from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
 
@@ -13,8 +16,10 @@ const inputClass =
   'bg-surface-container-lowest border-subtle border border-border-subtle text-body-sm px-3 py-2 rounded focus:outline-none focus:border-primary-container w-full';
 
 export default function CreateDisputePage(): React.ReactElement {
+  const router = useRouter();
   const { isConnected } = useAccount();
   const { run, status, error, txHash } = useVeritineWrite();
+  const [redirecting, setRedirecting] = useState(false);
 
   const [question, setQuestion] = useState('');
   const [description, setDescription] = useState('');
@@ -41,7 +46,7 @@ export default function CreateDisputePage(): React.ReactElement {
       return;
     }
 
-    await run((client) =>
+    const submitted = await run((client) =>
       client.createDispute({
         question,
         description,
@@ -53,6 +58,26 @@ export default function CreateDisputePage(): React.ReactElement {
         minEvidenceStakeWei: minEvidenceWei,
       }),
     );
+
+    if (!submitted) return;
+
+    // The chain write succeeded, but the dispute won't be visible in the
+    // explorer until it's indexed into Postgres - the cron sync runs
+    // every 5 minutes, far too slow right after a user's own action. New
+    // dispute ids are sequential, so the just-created one is always
+    // dispute_count - 1; sync that single id (cheap, bounded, no admin
+    // key needed - see IndexerController.syncOne) before navigating so
+    // it's already there when the user lands on the page.
+    setRedirecting(true);
+    try {
+      const readClient = getVeritineReadClient();
+      const count = await readClient.getDisputeCount();
+      const newDisputeId = count - 1;
+      await apiFetch(`/indexer/sync/${newDisputeId}`, { method: 'POST' }).catch(() => null);
+      router.push(`/disputes/${newDisputeId}`);
+    } catch {
+      router.push('/disputes');
+    }
   };
 
   return (
@@ -145,12 +170,13 @@ export default function CreateDisputePage(): React.ReactElement {
             </div>
             <button
               type="submit"
-              disabled={status === 'pending' || status === 'confirming'}
+              disabled={status === 'pending' || status === 'confirming' || redirecting}
               className="py-stack-sm bg-primary-container text-on-primary-container font-bold rounded hover:brightness-110 transition-all disabled:opacity-50"
             >
               {status === 'pending' && 'Submitting...'}
               {status === 'confirming' && 'Waiting for finality...'}
-              {(status === 'idle' || status === 'success' || status === 'error') && 'Create Dispute'}
+              {status === 'success' && redirecting && 'Opening your dispute...'}
+              {(status === 'idle' || status === 'error' || (status === 'success' && !redirecting)) && 'Create Dispute'}
             </button>
             {status === 'success' && <p className="text-verified text-body-sm">Confirmed: {txHash}</p>}
             {error && <p className="text-slashed text-body-sm">{error}</p>}

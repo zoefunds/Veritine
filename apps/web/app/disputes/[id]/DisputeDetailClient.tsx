@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useVeritineWrite } from '../../../hooks/useVeritineWrite';
 import { parseGen } from '../../../lib/parse-gen';
+import { formatGen } from '../../../lib/format-gen';
 
 interface Position {
   contractPositionId: string;
@@ -30,14 +31,24 @@ function TxStatus({ status, error, txHash }: { status: string; error: string | n
 export function StakePositionForm({
   disputeContractId,
   positions,
+  minStakeWei,
 }: {
   disputeContractId: string;
   positions: Position[];
+  minStakeWei: string;
 }): React.ReactElement {
   const { isConnected } = useAccount();
   const { run, status, error, txHash } = useVeritineWrite();
   const [positionIndex, setPositionIndex] = useState(0);
   const [amount, setAmount] = useState('');
+  const minStakeGen = formatGen(minStakeWei);
+  const belowMinimum = amount.trim() !== '' && (() => {
+    try {
+      return parseGen(amount) < BigInt(minStakeWei);
+    } catch {
+      return false;
+    }
+  })();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,15 +74,20 @@ export function StakePositionForm({
           </option>
         ))}
       </select>
-      <input
-        type="text"
-        placeholder="Amount in GEN"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        className={inputClass}
-        required
-      />
-      <button type="submit" disabled={status === 'pending' || status === 'confirming'} className={buttonClass}>
+      <div>
+        <input
+          type="text"
+          placeholder="Amount in GEN"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className={inputClass}
+          required
+        />
+        <p className={`text-[11px] mt-1 ${belowMinimum ? 'text-slashed' : 'text-text-muted'}`}>
+          Minimum stake for this dispute: {minStakeGen} GEN
+        </p>
+      </div>
+      <button type="submit" disabled={status === 'pending' || status === 'confirming' || belowMinimum} className={buttonClass}>
         {status === 'pending' && 'Submitting...'}
         {status === 'confirming' && 'Waiting for finality...'}
         {(status === 'idle' || status === 'success' || status === 'error') && 'Stake on Position'}
@@ -84,9 +100,11 @@ export function StakePositionForm({
 export function SubmitEvidenceForm({
   disputeContractId,
   positions,
+  minStakeWei,
 }: {
   disputeContractId: string;
   positions: Position[];
+  minStakeWei: string;
 }): React.ReactElement {
   const { isConnected } = useAccount();
   const { run, status, error, txHash } = useVeritineWrite();
@@ -97,6 +115,14 @@ export function SubmitEvidenceForm({
   const [summary, setSummary] = useState('');
   const [sourceType, setSourceType] = useState('REPUTABLE_JOURNALISM');
   const [amount, setAmount] = useState('');
+  const minStakeGen = formatGen(minStakeWei);
+  const belowMinimum = amount.trim() !== '' && (() => {
+    try {
+      return parseGen(amount) < BigInt(minStakeWei);
+    } catch {
+      return false;
+    }
+  })();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,8 +190,13 @@ export function SubmitEvidenceForm({
         className={`${inputClass} min-h-[80px]`}
         required
       />
-      <input type="text" placeholder="Stake amount in GEN" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputClass} required />
-      <button type="submit" disabled={status === 'pending' || status === 'confirming'} className={buttonClass}>
+      <div>
+        <input type="text" placeholder="Stake amount in GEN" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputClass} required />
+        <p className={`text-[11px] mt-1 ${belowMinimum ? 'text-slashed' : 'text-text-muted'}`}>
+          Minimum stake for this dispute: {minStakeGen} GEN
+        </p>
+      </div>
+      <button type="submit" disabled={status === 'pending' || status === 'confirming' || belowMinimum} className={buttonClass}>
         {status === 'pending' && 'Submitting...'}
         {status === 'confirming' && 'Waiting for finality...'}
         {(status === 'idle' || status === 'success' || status === 'error') && 'Submit Evidence'}

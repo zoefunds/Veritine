@@ -4,7 +4,9 @@ import { formatGen } from '../../../lib/format-gen';
 import { apiFetch } from '../../../lib/api-client';
 import { StakePositionForm, SubmitEvidenceForm } from './DisputeDetailClient';
 
-export const dynamic = 'force-dynamic';
+// See apps/web/app/disputes/page.tsx for why this uses a short revalidate
+// window instead of force-dynamic.
+export const revalidate = 5;
 
 interface DisputeDetail {
   id: string;
@@ -13,6 +15,8 @@ interface DisputeDetail {
   category: string;
   status: string;
   totalStakeWei: string;
+  minPositionStakeWei: string;
+  minEvidenceStakeWei: string;
   participationDeadline: string;
   evidenceDeadline: string;
   creator: string;
@@ -143,7 +147,11 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
 
             <div className="bg-surface ghost-border p-stack-md rounded">
               <h2 className="font-label-caps text-label-caps text-on-surface mb-stack-md">Stake on a Position</h2>
-              <StakePositionForm disputeContractId={dispute.id} positions={dispute.positions} />
+              <StakePositionForm
+                disputeContractId={dispute.id}
+                positions={dispute.positions}
+                minStakeWei={dispute.minPositionStakeWei}
+              />
             </div>
 
             <div className="flex flex-col gap-stack-md">
@@ -198,7 +206,11 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
 
               <div className="bg-surface ghost-border p-stack-md rounded">
                 <h3 className="font-label-caps text-label-caps text-on-surface mb-stack-md">Submit Evidence</h3>
-                <SubmitEvidenceForm disputeContractId={dispute.id} positions={dispute.positions} />
+                <SubmitEvidenceForm
+                  disputeContractId={dispute.id}
+                  positions={dispute.positions}
+                  minStakeWei={dispute.minEvidenceStakeWei}
+                />
               </div>
             </div>
           </div>
@@ -286,6 +298,14 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
                 <div className="flex justify-between items-center text-body-sm">
                   <span className="text-on-surface-variant">Positions</span>
                   <span className="font-code-sm text-on-surface">{dispute.positions.length}</span>
+                </div>
+                <div className="flex justify-between items-center text-body-sm">
+                  <span className="text-on-surface-variant">Min Position Stake</span>
+                  <span className="font-code-sm text-on-surface">{formatGen(dispute.minPositionStakeWei)} GEN</span>
+                </div>
+                <div className="flex justify-between items-center text-body-sm">
+                  <span className="text-on-surface-variant">Min Evidence Stake</span>
+                  <span className="font-code-sm text-on-surface">{formatGen(dispute.minEvidenceStakeWei)} GEN</span>
                 </div>
               </div>
             </div>

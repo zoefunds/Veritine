@@ -5,7 +5,9 @@ import { formatGen } from '../../lib/format-gen';
 import { apiFetch } from '../../lib/api-client';
 import { WalletCard } from './DashboardClient';
 
-export const dynamic = 'force-dynamic';
+// See apps/web/app/disputes/page.tsx for why this uses a short revalidate
+// window instead of force-dynamic.
+export const revalidate = 5;
 
 interface DisputeSummary {
   id: string;

@@ -102,8 +102,8 @@ export async function waitForFinality(
   const receipt = await read.client.waitForTransactionReceipt({
     hash: hash as unknown as Hash,
     status: TransactionStatus.ACCEPTED,
-    retries: 40,
-    interval: 3000,
+    retries: 120,
+    interval: 1000,
   });
   return {
     finalized: true,
