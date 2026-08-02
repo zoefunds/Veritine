@@ -9,7 +9,13 @@
 // contractSyncedAt / contract transaction tracking.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" covers local dev (macOS); debian-openssl-3.0.x covers the
+  // node:20-slim (Debian bookworm) image used for the Fly.io deployment.
+  // Pinned explicitly rather than relying on Prisma's OpenSSL
+  // auto-detection, which silently picked the wrong target (1.1.x) when
+  // openssl wasn't yet installed in the build image and crashed at boot.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {

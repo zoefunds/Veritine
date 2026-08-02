@@ -50,7 +50,8 @@ FILES["database/schema.prisma"] = """// Veritine database schema.
 // contractSyncedAt / contract transaction tracking.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
