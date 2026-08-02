@@ -1,4 +1,5 @@
 import { getVeritineReadClient } from '../lib/veritine-read-client';
+import { formatGen } from '../lib/format-gen';
 
 /**
  * Server component - reads live data directly from the deployed Veritine
@@ -40,7 +41,7 @@ export async function LivePlatformStats(): Promise<React.ReactElement> {
       <Stat label="Disputes" value={String(stats?.dispute_count ?? 0)} />
       <Stat label="Evidence Submitted" value={String(stats?.evidence_count ?? 0)} />
       <Stat label="Adjudicated" value={String(stats?.total_disputes_adjudicated ?? 0)} />
-      <Stat label="Total Volume (wei)" value={String(stats?.total_volume_wei ?? 0)} />
+      <Stat label="Total Volume (GEN)" value={formatGen((stats?.total_volume_wei as string | number) ?? 0)} />
     </div>
   );
 }
