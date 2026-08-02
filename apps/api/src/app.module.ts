@@ -6,9 +6,10 @@ import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { IndexerModule } from './modules/indexer/indexer.module';
+import { DisputesModule } from './modules/disputes/disputes.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), HealthModule, UsersModule, AuthModule, IndexerModule],
+  imports: [ScheduleModule.forRoot(), HealthModule, UsersModule, AuthModule, IndexerModule, DisputesModule],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

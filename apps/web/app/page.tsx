@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ConnectWalletButton } from '../components/ConnectWalletButton';
 import { LivePlatformStats } from '../components/LivePlatformStats';
 
@@ -22,6 +23,9 @@ export default function HomePage(): React.ReactElement {
         A Staked Knowledge War. Foundation stage - the full landing page ships in Phase 10.
       </p>
       <LivePlatformStats />
+      <Link href="/disputes" style={{ color: 'var(--primary)' }}>
+        Browse Disputes →
+      </Link>
       <ConnectWalletButton />
     </main>
   );
