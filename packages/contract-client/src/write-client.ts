@@ -59,6 +59,42 @@ export async function writeVeritine(
  * whether the call itself succeeded and would otherwise make every write
  * feel like it hung or failed in the UI.
  */
+interface LeaderReceiptLike {
+  execution_result?: string;
+}
+
+interface StudioReceiptLike {
+  txExecutionResultName?: string;
+  consensus_data?: {
+    leader_receipt?: LeaderReceiptLike[] | LeaderReceiptLike;
+  };
+}
+
+/**
+ * Determines whether a transaction actually succeeded. GenLayer chains
+ * expose this two different ways depending on decode path:
+ *
+ * - Non-studio chains: `decodeTransaction` sets a top-level
+ *   `txExecutionResultName` ("FINISHED_WITH_RETURN" | "FINISHED_WITH_ERROR").
+ * - Studio/localnet chains (e.g. studionet): `decodeLocalnetTransaction`
+ *   never sets that field at all - the real signal lives per-leader-receipt
+ *   at `consensus_data.leader_receipt[].execution_result`, a plain
+ *   "SUCCESS" | "ERROR" string. Relying only on `txExecutionResultName`
+ *   made every studionet write report as failed regardless of the actual
+ *   on-chain outcome, since that field is always undefined there.
+ */
+function didExecutionSucceed(receipt: unknown): boolean {
+  const r = receipt as StudioReceiptLike;
+  const leaderReceipts = r.consensus_data?.leader_receipt;
+  if (leaderReceipts !== undefined) {
+    const receipts = Array.isArray(leaderReceipts) ? leaderReceipts : [leaderReceipts];
+    if (receipts.length > 0) {
+      return receipts.every((lr) => lr.execution_result === 'SUCCESS');
+    }
+  }
+  return r.txExecutionResultName === 'FINISHED_WITH_RETURN';
+}
+
 export async function waitForFinality(
   read: { client: ReturnType<typeof createClient> },
   hash: `0x${string}`,
@@ -69,10 +105,9 @@ export async function waitForFinality(
     retries: 40,
     interval: 3000,
   });
-  const executionResultName = (receipt as { txExecutionResultName?: string }).txExecutionResultName;
   return {
     finalized: true,
-    succeeded: executionResultName === 'FINISHED_WITH_RETURN',
+    succeeded: didExecutionSucceed(receipt),
     raw: receipt,
   };
 }
