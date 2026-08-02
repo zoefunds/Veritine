@@ -61,6 +61,22 @@ export class VeritineReadClient {
     return readVeritine<number>(this.read, 'get_balance_of', [address]);
   }
 
+  getActivity(disputeId: number, offset = 0, limit = 25) {
+    return readVeritine<Array<{ kind: string; actor: string; amount_wei: number; ts: number; note: string }>>(
+      this.read,
+      'get_activity',
+      [disputeId, offset, limit],
+    );
+  }
+
+  getPositionStake(disputeId: number, positionIndex: number, address: string) {
+    return readVeritine<{ amount_wei: number; claimed: boolean }>(this.read, 'get_position_stake', [
+      disputeId,
+      positionIndex,
+      address,
+    ]);
+  }
+
   getEvidenceOutcomeEconomics() {
     return readVeritine<Record<string, unknown>>(this.read, 'get_evidence_outcome_economics');
   }

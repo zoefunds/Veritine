@@ -24,4 +24,8 @@ export class UsersService {
   getById(id: string): Promise<User | null> {
     return this.usersRepository.findById(id);
   }
+
+  getActivityByWalletAddress(address: string) {
+    return this.usersRepository.findActivityByWalletAddress(address.toLowerCase());
+  }
 }

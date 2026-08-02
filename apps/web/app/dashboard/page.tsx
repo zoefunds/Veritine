@@ -3,7 +3,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import { formatGen } from '../../lib/format-gen';
 import { apiFetch } from '../../lib/api-client';
-import { WalletCard } from './DashboardClient';
+import { WalletCard, MyActivity } from './DashboardClient';
 
 // See apps/web/app/disputes/page.tsx for why this uses a short revalidate
 // window instead of force-dynamic.
@@ -81,6 +81,8 @@ export default async function DashboardPage(): Promise<React.ReactElement> {
                 ))}
               </div>
             </section>
+
+            <MyActivity />
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-stack-md">

@@ -14,6 +14,22 @@ export class UsersRepository {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  findActivityByWalletAddress(address: string) {
+    return this.prisma.user.findUnique({
+      where: { primaryWalletAddress: address },
+      include: {
+        positionStakes: {
+          include: { dispute: true, position: true },
+          orderBy: { createdAt: 'desc' },
+        },
+        evidenceSubmitted: {
+          include: { dispute: true, position: true },
+          orderBy: { submittedAt: 'desc' },
+        },
+      },
+    });
+  }
+
   createWithWallet(address: string, chainId: string): Promise<User> {
     return this.prisma.user.create({
       data: {

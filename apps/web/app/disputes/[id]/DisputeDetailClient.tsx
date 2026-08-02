@@ -1,10 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import { useVeritineWrite } from '../../../hooks/useVeritineWrite';
 import { parseGen } from '../../../lib/parse-gen';
 import { formatGen } from '../../../lib/format-gen';
+import { apiFetch } from '../../../lib/api-client';
+
+/**
+ * After a write finalizes, the indexer needs to re-read the chain before
+ * the change shows up anywhere (dispute totals, the position/evidence
+ * lists, the dashboard's My Activity). Syncing just this one dispute is
+ * cheap (bounded RPC calls - see IndexerController.syncOne) and safe to
+ * call from the client without an admin key. router.refresh() then
+ * re-runs this page's server-side data fetch so the newly-synced state
+ * is visible without a manual reload.
+ */
+async function syncAndRefresh(disputeContractId: string, router: ReturnType<typeof useRouter>): Promise<void> {
+  await apiFetch(`/indexer/sync/${disputeContractId}`, { method: 'POST' }).catch(() => null);
+  router.refresh();
+}
 
 interface Position {
   contractPositionId: string;
@@ -39,6 +55,7 @@ export function StakePositionForm({
 }): React.ReactElement {
   const { isConnected } = useAccount();
   const { run, status, error, txHash } = useVeritineWrite();
+  const router = useRouter();
   const [positionIndex, setPositionIndex] = useState(0);
   const [amount, setAmount] = useState('');
   const minStakeGen = formatGen(minStakeWei);
@@ -58,7 +75,8 @@ export function StakePositionForm({
     } catch {
       return;
     }
-    await run((client) => client.stakePosition(Number(disputeContractId), positionIndex, weiAmount));
+    const submitted = await run((client) => client.stakePosition(Number(disputeContractId), positionIndex, weiAmount));
+    if (submitted) await syncAndRefresh(disputeContractId, router);
   };
 
   if (!isConnected) {
@@ -108,6 +126,7 @@ export function SubmitEvidenceForm({
 }): React.ReactElement {
   const { isConnected } = useAccount();
   const { run, status, error, txHash } = useVeritineWrite();
+  const router = useRouter();
   const [positionIndex, setPositionIndex] = useState(0);
   const [sourceUrl, setSourceUrl] = useState('');
   const [sourceTitle, setSourceTitle] = useState('');
@@ -132,7 +151,7 @@ export function SubmitEvidenceForm({
     } catch {
       return;
     }
-    await run((client) =>
+    const submitted = await run((client) =>
       client.submitEvidence({
         disputeId: Number(disputeContractId),
         positionIndex,
@@ -145,6 +164,7 @@ export function SubmitEvidenceForm({
         valueWei: weiAmount,
       }),
     );
+    if (submitted) await syncAndRefresh(disputeContractId, router);
   };
 
   if (!isConnected) {
