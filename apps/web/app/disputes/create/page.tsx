@@ -130,10 +130,16 @@ export default function CreateDisputePage(): React.ReactElement {
             <div className="flex gap-stack-sm">
               <label className="flex-1 text-label-caps text-text-muted">
                 Min position stake (GEN)
+                <span className="block normal-case text-text-muted/70 font-normal mt-0.5">
+                  Floor required from others who stake a position later &mdash; not paid by you now.
+                </span>
                 <input value={minPositionStake} onChange={(e) => setMinPositionStake(e.target.value)} className={`${inputClass} mt-1`} />
               </label>
               <label className="flex-1 text-label-caps text-text-muted">
                 Min evidence stake (GEN)
+                <span className="block normal-case text-text-muted/70 font-normal mt-0.5">
+                  Floor required from others who submit evidence later &mdash; not paid by you now.
+                </span>
                 <input value={minEvidenceStake} onChange={(e) => setMinEvidenceStake(e.target.value)} className={`${inputClass} mt-1`} />
               </label>
             </div>
