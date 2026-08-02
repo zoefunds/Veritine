@@ -36,7 +36,16 @@ interface DisputeDetail {
 
 async function fetchDispute(id: string): Promise<DisputeDetail | null> {
   try {
-    return await apiFetch<DisputeDetail>(`/disputes/${id}`);
+    const dispute = await apiFetch<DisputeDetail>(`/disputes/${id}`);
+    // Defensive fallback: these two fields were briefly missing from the
+    // API response (see disputes.controller.ts) after being added to this
+    // interface, which crashed the whole page via formatGen(undefined).
+    // Coerce to "0" rather than trust the response shape unconditionally.
+    return {
+      ...dispute,
+      minPositionStakeWei: dispute.minPositionStakeWei ?? '0',
+      minEvidenceStakeWei: dispute.minEvidenceStakeWei ?? '0',
+    };
   } catch {
     return null;
   }

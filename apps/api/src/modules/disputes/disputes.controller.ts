@@ -60,6 +60,8 @@ export class DisputesController {
       category: dispute.category,
       status: dispute.status,
       totalStakeWei: dispute.totalStakeWei,
+      minPositionStakeWei: dispute.minPositionStakeWei,
+      minEvidenceStakeWei: dispute.minEvidenceStakeWei,
       participationDeadline: dispute.participationDeadline,
       evidenceDeadline: dispute.evidenceDeadline,
       creator: dispute.creator.primaryWalletAddress,
