@@ -54,3 +54,4 @@ apps/web/tsconfig.tsbuildinfo
 
 # Claude Code harness session state (not project source)
 .claude/scheduled_tasks.lock
+.vercel

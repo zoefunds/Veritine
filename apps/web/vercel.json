@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @veritine/shared-types build && pnpm --filter @veritine/shared-config --filter @veritine/validation --filter @veritine/contract-client -r build && pnpm --filter @veritine/web build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
