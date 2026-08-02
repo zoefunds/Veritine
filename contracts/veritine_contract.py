@@ -46,6 +46,7 @@ docs/contracts/ for the full write-up):
 import datetime
 import json
 import re
+import typing
 from dataclasses import dataclass
 
 from genlayer import *
@@ -158,6 +159,13 @@ BPS_DENOMINATOR: int = 10000
 # ---- Limits — sanity rails, generous enough not to constrain real use ------
 MAX_POSITIONS_PER_DISPUTE: int = 6
 MIN_POSITIONS_PER_DISPUTE: int = 2
+
+# Sentinel for "no winning position" stored in an unsigned field (u32
+# storage avoids signed-int storage types, which are not used anywhere
+# in this contract to stay consistent with widely-verified GenVM storage
+# patterns). Any value >= MAX_POSITIONS_PER_DISPUTE unambiguously means
+# "no winner" since real position indices are always 0..5.
+NO_WINNER_INDEX: int = 255
 MAX_EVIDENCE_PER_DISPUTE: int = 20
 MAX_QUESTION_LEN: int = 300
 MAX_DESCRIPTION_LEN: int = 5000
@@ -280,7 +288,7 @@ class Dispute:
     total_stake_wei: u256
     position_count: u32
     evidence_count: u32
-    winning_position_index: i32   # -1 when no position wins
+    winning_position_index: u32   # NO_WINNER_INDEX sentinel when no position wins
     conclusion: str               # "" until adjudicated
     reasoning_summary: str
     adjudicated_at: u64
@@ -368,7 +376,7 @@ def _first_present(payload: dict, keys: list[str]):
     return None
 
 
-def _coerce_bool(raw) -> bool | None:
+def _coerce_bool(raw) -> typing.Optional[bool]:
     if isinstance(raw, bool):
         return raw
     if isinstance(raw, (int, float)):
@@ -738,7 +746,11 @@ class Veritine(gl.Contract):
             "total_stake_wei": int(dispute.total_stake_wei),
             "position_count": int(dispute.position_count),
             "evidence_count": int(dispute.evidence_count),
-            "winning_position_index": int(dispute.winning_position_index),
+            "winning_position_index": (
+                int(dispute.winning_position_index)
+                if int(dispute.winning_position_index) != NO_WINNER_INDEX
+                else -1
+            ),
             "conclusion": dispute.conclusion,
             "reasoning_summary": dispute.reasoning_summary,
             "adjudicated_at": int(dispute.adjudicated_at),
@@ -1124,7 +1136,7 @@ Respond with ONLY a JSON object, no markdown:
             total_stake_wei=u256(0),
             position_count=u32(len(labels)),
             evidence_count=u32(0),
-            winning_position_index=i32(-1),
+            winning_position_index=u32(NO_WINNER_INDEX),
             conclusion="",
             reasoning_summary="",
             adjudicated_at=u64(0),
@@ -1421,7 +1433,8 @@ Respond with ONLY a JSON object, no markdown:
         conclusion_result = self._adjudicate_dispute_conclusion(dispute, positions, evidence_summaries)
 
         dispute.conclusion = conclusion_result["conclusion"]
-        dispute.winning_position_index = i32(conclusion_result["winning_position_index"])
+        raw_winner = conclusion_result["winning_position_index"]
+        dispute.winning_position_index = u32(raw_winner if raw_winner >= 0 else NO_WINNER_INDEX)
         dispute.reasoning_summary = _truncate(conclusion_result["reasoning_summary"], MAX_REASONING_STORED)
         dispute.status = u8(STATUS_ADJUDICATED)
         dispute.adjudicated_at = u64(now_ts)
