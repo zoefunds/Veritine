@@ -17,6 +17,11 @@ const backendEnvSchema = z.object({
   GENLAYER_CHAIN_ID: z.string().optional(),
   FRONTEND_URL: z.string().url('FRONTEND_URL must be a valid URL'),
   API_URL: z.string().url('API_URL must be a valid URL'),
+  // Optional: gates POST /indexer/sync, which fans out into real GenLayer
+  // RPC calls against a 5,000/day quota. Strongly recommended in production;
+  // if unset, the endpoint falls back to rate-limiting only (see
+  // InternalApiKeyGuard).
+  INTERNAL_API_KEY: z.string().min(16).optional(),
 });
 
 export type BackendEnv = z.infer<typeof backendEnvSchema>;

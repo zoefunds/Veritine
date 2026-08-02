@@ -23,7 +23,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Throttle({ auth: { limit: 20, ttl: 60_000 } })
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('nonce')
   async requestNonce(@Body() body: unknown) {
     const parsed = requestNonceSchema.safeParse(body);

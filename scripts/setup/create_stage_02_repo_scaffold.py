@@ -190,6 +190,11 @@ GENLAYER_CHAIN_ID=
 # Backend-only secrets \u2014 never expose these with a NEXT_PUBLIC_ prefix
 JWT_SECRET=replace_with_a_long_random_string
 
+# Gates POST /indexer/sync (fans out into real GenLayer RPC calls against
+# a 5,000/day quota) \u2014 strongly recommended in production, optional in dev.
+# Generate with: openssl rand -hex 32
+INTERNAL_API_KEY=
+
 # Frontend-public (safe to expose \u2014 must be prefixed for Next.js)
 # NOTE: use 127.0.0.1, not localhost, for local dev - Node's fetch can
 # resolve "localhost" to ::1 (IPv6) while the API only binds 0.0.0.0
