@@ -1,47 +1,5 @@
+# v0.2.16
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
-
-"""
-Veritine — A Staked Knowledge War.
-
-An Intelligent Contract that adjudicates evidence-staked factual disputes.
-Participants stake GEN behind competing positions AND behind individual
-pieces of evidence. At the evidence deadline, this contract independently
-fetches every cited source, evaluates its authenticity/authority/relevance/
-timeliness/claim-support/materiality, and settles the dispute with
-proportional rewards, refunds, or slashing — never punishing evidence
-merely for backing the losing position.
-
-Design notes (see docs/architecture/PHASE_1_ARCHITECTURE.md and
-docs/contracts/ for the full write-up):
-
-- GenLayer participates in the actual trust decision. Validators do not
-  just check that the leader's output is valid JSON — the validator
-  function independently re-fetches evidence and re-derives the same
-  substantive verdict fields, then compares those fields with an
-  explicit tolerance band. This is a deliberate choice to satisfy two
-  competing constraints: (a) the adjudication must be a real,
-  independently-checked decision, not a rubber stamp on the leader's
-  answer, and (b) the tolerance band must be wide enough that ordinary
-  LLM/web-fetch variance between leader and validator does not trigger
-  constant leader rotation or UNDETERMINED results. See
-  `_evidence_verdicts_agree` and `_dispute_conclusions_agree`, the pure
-  comparison helpers used by each adjudication method's validator closure.
-
-- Value transfer follows a strict escrow discipline throughout: every
-  GEN-accepting method is `@gl.public.write.payable` and reads the
-  amount only from `gl.message.value`; every stake type tracks a
-  "term" field separately from a "ledger" field; every payout path
-  reads the ledger into locals, zeroes it, persists state, and only
-  then calls the single emission choke point `_send_gen`. See the
-  `_send_gen` docstring and every `claim_*` / `withdraw` method.
-
-- The contract never treats a submitted URL as automatically truthful:
-  `_fetch_evidence_text` always runs inside a nondet leader/validator
-  function, and the evaluation prompt explicitly instructs the model
-  to treat fetched page content as untrusted data, never as
-  instructions that could redefine the dispute question, evidence
-  criteria, or economic rules.
-"""
 
 import datetime
 import json
