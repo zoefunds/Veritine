@@ -45,3 +45,6 @@ coverage/
 # Fly
 fly.toml.bak
 apps/web/tsconfig.tsbuildinfo
+
+# Prisma generated client (regenerate with `pnpm --filter @veritine/api db:generate`)
+.prisma/

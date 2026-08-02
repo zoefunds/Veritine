@@ -9,9 +9,6 @@ Intelligent Contract independently fetches and cross-checks cited sources,
 adjudicates evidence quality, and applies proportional rewards, refunds, or
 slashing — never punishing evidence merely for backing the losing side.
 
-> Formerly named "SourceStake" during early planning; renamed to Veritine
-> (from *veritas*, truth) because SourceStake read as a generic crypto name.
-
 Full product/architecture spec: see [docs/architecture/PHASE_1_ARCHITECTURE.md](docs/architecture/PHASE_1_ARCHITECTURE.md).
 
 ## Status
