@@ -17,7 +17,7 @@ export default function HomePage(): React.ReactElement {
             <span className="inline-block px-3 py-1 mb-6 rounded-full border border-primary/30 bg-primary/5 text-primary font-label-caps text-label-caps">
               LIVE ON GENLAYER STUDIONET
             </span>
-            <h1 className="font-display-lg text-display-lg md:text-[72px] md:leading-[80px] text-text-primary mb-stack-md">
+            <h1 className="font-display-lg text-display-lg md:text-[52px] md:leading-[58px] text-text-primary mb-stack-md">
               The Staked <br />
               <span className="text-primary">Knowledge War</span>
             </h1>
@@ -200,7 +200,7 @@ export default function HomePage(): React.ReactElement {
         {/* Final CTA */}
         <section className="max-w-[1280px] mx-auto px-gutter-mobile md:px-margin-desktop py-stack-lg">
           <div className="relative bg-gradient-to-br from-surface to-surface-container rounded-2xl p-margin-desktop text-center overflow-hidden ghost-border">
-            <h2 className="font-headline-lg text-[36px] leading-tight text-on-surface mb-6">
+            <h2 className="font-headline-lg text-[28px] leading-tight text-on-surface mb-6">
               Ready to stake your expertise?
             </h2>
             <p className="text-text-muted max-w-xl mx-auto mb-10">
