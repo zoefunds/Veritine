@@ -45,11 +45,19 @@ export async function writeVeritine(
 }
 
 /**
- * Waits for a submitted transaction to finalize and reports whether
- * execution actually succeeded - a transaction can finalize by consensus
- * while still having failed execution, so callers must check this before
- * treating the write as successful. Never assume success just because a
- * hash was returned.
+ * Waits for a submitted transaction to reach a decided consensus state
+ * (ACCEPTED, UNDETERMINED, CANCELED, or a timeout) and reports whether
+ * execution actually succeeded - a transaction can be accepted by
+ * consensus while still having failed execution, so callers must check
+ * this before treating the write as successful. Never assume success just
+ * because a hash was returned.
+ *
+ * We intentionally poll for ACCEPTED rather than FINALIZED: the execution
+ * result (and thus success/failure) is already known once consensus
+ * accepts the transaction, but full FINALIZED status only lands after
+ * studionet's separate finality window closes, which is unrelated to
+ * whether the call itself succeeded and would otherwise make every write
+ * feel like it hung or failed in the UI.
  */
 export async function waitForFinality(
   read: { client: ReturnType<typeof createClient> },
@@ -57,7 +65,9 @@ export async function waitForFinality(
 ): Promise<{ finalized: boolean; succeeded: boolean; raw: unknown }> {
   const receipt = await read.client.waitForTransactionReceipt({
     hash: hash as unknown as Hash,
-    status: TransactionStatus.FINALIZED,
+    status: TransactionStatus.ACCEPTED,
+    retries: 40,
+    interval: 3000,
   });
   const executionResultName = (receipt as { txExecutionResultName?: string }).txExecutionResultName;
   return {
