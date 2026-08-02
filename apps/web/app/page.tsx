@@ -1,7 +1,8 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { LivePlatformStats } from '../components/LivePlatformStats';
+import { LivePlatformStats, LivePlatformStatsSkeleton } from '../components/LivePlatformStats';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,9 @@ export default function HomePage(): React.ReactElement {
 
         {/* Live stats */}
         <section className="max-w-[1280px] mx-auto px-gutter-mobile md:px-margin-desktop pb-stack-lg">
-          <LivePlatformStats />
+          <Suspense fallback={<LivePlatformStatsSkeleton />}>
+            <LivePlatformStats />
+          </Suspense>
         </section>
 
         {/* Trust problem */}

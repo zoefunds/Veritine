@@ -56,3 +56,35 @@ function Stat({ label, value }: { label: string; value: string }): React.ReactEl
     </div>
   );
 }
+
+export function LivePlatformStatsSkeleton(): React.ReactElement {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: '2rem',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        padding: '1rem',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--surface-container-low)',
+      }}
+    >
+      {['Disputes', 'Evidence Submitted', 'Adjudicated', 'Total Volume (GEN)'].map((label) => (
+        <div key={label} style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              fontSize: '1.5rem',
+              fontFamily: 'JetBrains Mono, monospace',
+              color: 'var(--text-muted)',
+            }}
+          >
+            &hellip;
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
