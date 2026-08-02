@@ -48,3 +48,6 @@ apps/web/tsconfig.tsbuildinfo
 
 # Prisma generated client (regenerate with `pnpm --filter @veritine/api db:generate`)
 .prisma/
+
+# Python test cache
+.pytest_cache/
