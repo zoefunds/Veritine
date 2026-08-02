@@ -1,4 +1,18 @@
-import Link from 'next/link';
+#!/usr/bin/env python3
+"""
+Veritine - Stage 10c: dispute explorer + dispute detail redesign.
+
+Run from: /Users/macbook/source-stake
+Command:  python3 scripts/setup/create_stage_10c_explorer_detail.py
+"""
+
+import os
+import sys
+
+ROOT = os.getcwd()
+FILES = {}
+
+FILES["apps/web/app/disputes/page.tsx"] = """import Link from 'next/link';
 import { Navbar } from '../../components/layout/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import { formatGen } from '../../lib/format-gen';
@@ -172,3 +186,25 @@ export default async function DisputesPage({
     </>
   );
 }
+"""
+
+
+def main():
+    written = []
+    for rel_path, content in FILES.items():
+        full_path = os.path.join(ROOT, rel_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        written.append(rel_path)
+    print(f"Wrote {len(written)} files:")
+    for p in written:
+        print(f"  + {p}")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError as e:
+        print(f"ERROR: file operation failed: {e}", file=sys.stderr)
+        sys.exit(1)

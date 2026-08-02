@@ -3,43 +3,70 @@
 import { useAccount } from 'wagmi';
 import { useWalletAuth } from '../hooks/useWalletAuth';
 
-export function ConnectWalletButton(): React.ReactElement {
+interface ConnectWalletButtonProps {
+  /** Compact horizontal layout for the navbar; default is a stacked, more detailed layout. */
+  compact?: boolean;
+}
+
+export function ConnectWalletButton({ compact = false }: ConnectWalletButtonProps): React.ReactElement {
   const { isConnected } = useAccount();
   const { status, error, user, signIn, signOut } = useWalletAuth();
 
+  if (compact) {
+    return (
+      <div className="flex items-center gap-stack-sm">
+        {status === 'signed-in' && user ? (
+          <button
+            onClick={signOut}
+            className="bg-primary-container text-on-primary-container px-stack-md py-base font-label-caps text-label-caps rounded-lg hover:scale-95 transition-transform active:scale-90"
+          >
+            {user.primaryWalletAddress.slice(0, 6)}...{user.primaryWalletAddress.slice(-4)}
+          </button>
+        ) : (
+          <>
+            <appkit-button />
+            {isConnected && (
+              <button
+                onClick={signIn}
+                disabled={status === 'requesting-nonce' || status === 'awaiting-signature' || status === 'verifying'}
+                className="bg-primary-container text-on-primary-container px-stack-md py-base font-label-caps text-label-caps rounded-lg hover:scale-95 transition-transform active:scale-90"
+              >
+                {status === 'idle' || status === 'error' ? 'Sign in' : 'Signing in...'}
+              </button>
+            )}
+          </>
+        )}
+        {error && <p className="text-slashed text-body-sm">{error}</p>}
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+    <div className="flex flex-col items-center gap-stack-sm">
       <appkit-button />
 
       {isConnected && status !== 'signed-in' && (
         <button
           onClick={signIn}
           disabled={status === 'requesting-nonce' || status === 'awaiting-signature' || status === 'verifying'}
-          style={{
-            padding: '0.5rem 1.25rem',
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--primary-container)',
-            color: 'var(--on-primary-container)',
-            border: 'none',
-            cursor: 'pointer',
-          }}
+          className="px-stack-lg py-stack-sm rounded-lg bg-primary-container text-on-primary-container border-none cursor-pointer"
         >
           {status === 'idle' || status === 'error' ? 'Sign in with wallet' : 'Signing in...'}
         </button>
       )}
 
       {status === 'signed-in' && user && (
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+        <div className="text-center">
+          <p className="text-text-muted text-body-sm">
             Signed in as {user.primaryWalletAddress.slice(0, 6)}...{user.primaryWalletAddress.slice(-4)}
           </p>
-          <button onClick={signOut} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}>
+          <button onClick={signOut} className="bg-transparent border-none text-primary cursor-pointer">
             Sign out
           </button>
         </div>
       )}
 
-      {error && <p style={{ color: 'var(--slashed)', fontSize: '0.875rem' }}>{error}</p>}
+      {error && <p className="text-slashed text-body-sm">{error}</p>}
     </div>
   );
 }

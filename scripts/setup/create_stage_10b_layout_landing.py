@@ -1,4 +1,81 @@
-import Link from 'next/link';
+#!/usr/bin/env python3
+"""
+Veritine - Stage 10b: shared layout (Navbar/Footer) + full landing page.
+
+Run from: /Users/macbook/source-stake
+Command:  python3 scripts/setup/create_stage_10b_layout_landing.py
+"""
+
+import os
+import sys
+
+ROOT = os.getcwd()
+DIRS = ["apps/web/components/layout"]
+FILES = {}
+
+FILES["apps/web/components/layout/Navbar.tsx"] = """import Link from 'next/link';
+import { ConnectWalletButton } from '../ConnectWalletButton';
+
+export function Navbar(): React.ReactElement {
+  return (
+    <header className="fixed top-0 w-full z-50 flex justify-center border-b border-border-subtle glass-nav">
+      <nav className="w-full max-w-[1280px] h-16 flex justify-between items-center px-gutter-mobile md:px-margin-desktop">
+        <div className="flex items-center gap-gutter-desktop">
+          <Link href="/" className="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface tracking-tight">
+            Veritine
+          </Link>
+          <div className="hidden md:flex gap-stack-lg items-center">
+            <Link href="/disputes" className="text-on-surface-variant font-body-md text-body-sm hover:text-primary transition-colors">
+              Explorer
+            </Link>
+            <Link href="/dashboard" className="text-on-surface-variant font-body-md text-body-sm hover:text-primary transition-colors">
+              Dashboard
+            </Link>
+            <Link href="/docs" className="text-on-surface-variant font-body-md text-body-sm hover:text-primary transition-colors">
+              Docs
+            </Link>
+          </div>
+        </div>
+        <ConnectWalletButton compact />
+      </nav>
+    </header>
+  );
+}
+"""
+
+FILES["apps/web/components/layout/Footer.tsx"] = """export function Footer(): React.ReactElement {
+  return (
+    <footer className="w-full py-stack-lg px-gutter-mobile md:px-margin-desktop border-t border-border-subtle bg-surface-container-lowest mt-stack-lg">
+      <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-stack-md">
+        <div className="flex flex-col items-center md:items-start gap-base">
+          <span className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold tracking-tight">
+            Veritine
+          </span>
+          <p className="font-label-caps text-label-caps text-text-muted">
+            &copy; 2026 Veritine. Powered by GenLayer.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-stack-md">
+          <a className="font-label-caps text-label-caps text-text-muted hover:text-on-surface transition-colors" href="/docs">
+            Documentation
+          </a>
+          <a className="font-label-caps text-label-caps text-text-muted hover:text-on-surface transition-colors" href="https://github.com/zoefunds/Veritine" target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+          <a className="font-label-caps text-label-caps text-text-muted hover:text-on-surface transition-colors" href="/docs#security">
+            Security
+          </a>
+          <a className="font-label-caps text-label-caps text-text-muted hover:text-on-surface transition-colors" href="/docs#transparency">
+            Transparency Report
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+"""
+
+FILES["apps/web/app/page.tsx"] = """import Link from 'next/link';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { LivePlatformStats } from '../components/LivePlatformStats';
@@ -225,3 +302,27 @@ export default function HomePage(): React.ReactElement {
     </>
   );
 }
+"""
+
+
+def main():
+    for d in DIRS:
+        os.makedirs(os.path.join(ROOT, d), exist_ok=True)
+    written = []
+    for rel_path, content in FILES.items():
+        full_path = os.path.join(ROOT, rel_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        written.append(rel_path)
+    print(f"Wrote {len(written)} files:")
+    for p in written:
+        print(f"  + {p}")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError as e:
+        print(f"ERROR: file operation failed: {e}", file=sys.stderr)
+        sys.exit(1)

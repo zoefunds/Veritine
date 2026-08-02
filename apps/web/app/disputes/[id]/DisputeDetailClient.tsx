@@ -11,6 +11,22 @@ interface Position {
   totalStakeWei: string;
 }
 
+const inputClass =
+  'bg-surface-container-lowest border-subtle border border-border-subtle text-body-sm px-3 py-2 rounded focus:outline-none focus:border-primary-container w-full';
+
+const buttonClass =
+  'w-full py-stack-sm bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed';
+
+function TxStatus({ status, error, txHash }: { status: string; error: string | null; txHash: string | null }): React.ReactElement | null {
+  if (status === 'success' && txHash) {
+    return <p className="text-verified text-body-sm">Confirmed: {txHash.slice(0, 10)}...{txHash.slice(-8)}</p>;
+  }
+  if (error) {
+    return <p className="text-slashed text-body-sm">{error}</p>;
+  }
+  return null;
+}
+
 export function StakePositionForm({
   disputeContractId,
   positions,
@@ -35,16 +51,12 @@ export function StakePositionForm({
   };
 
   if (!isConnected) {
-    return <p style={{ color: 'var(--text-muted)' }}>Connect a wallet to stake on a position.</p>;
+    return <p className="text-text-muted text-body-sm">Connect a wallet to stake on a position.</p>;
   }
 
   return (
-    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '360px' }}>
-      <select
-        value={positionIndex}
-        onChange={(e) => setPositionIndex(Number(e.target.value))}
-        style={{ padding: '0.5rem', background: 'var(--surface-container-lowest)', color: 'inherit', border: '1px solid var(--border-subtle)' }}
-      >
+    <form onSubmit={submit} className="flex flex-col gap-stack-sm max-w-sm">
+      <select value={positionIndex} onChange={(e) => setPositionIndex(Number(e.target.value))} className={inputClass}>
         {positions.map((p, i) => (
           <option key={p.contractPositionId} value={i}>
             {p.label}
@@ -56,19 +68,15 @@ export function StakePositionForm({
         placeholder="Amount in GEN"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        style={{ padding: '0.5rem', background: 'var(--surface-container-lowest)', color: 'inherit', border: '1px solid var(--border-subtle)' }}
+        className={inputClass}
+        required
       />
-      <button
-        type="submit"
-        disabled={status === 'pending' || status === 'confirming'}
-        style={{ padding: '0.5rem', background: 'var(--primary-container)', color: 'var(--on-primary-container)', border: 'none', borderRadius: 'var(--radius-md)' }}
-      >
+      <button type="submit" disabled={status === 'pending' || status === 'confirming'} className={buttonClass}>
         {status === 'pending' && 'Submitting...'}
         {status === 'confirming' && 'Waiting for finality...'}
         {(status === 'idle' || status === 'success' || status === 'error') && 'Stake on Position'}
       </button>
-      {status === 'success' && <p style={{ color: 'var(--verified)', fontSize: '0.875rem' }}>Confirmed: {txHash}</p>}
-      {error && <p style={{ color: 'var(--slashed)', fontSize: '0.875rem' }}>{error}</p>}
+      <TxStatus status={status} error={error} txHash={txHash} />
     </form>
   );
 }
@@ -114,29 +122,22 @@ export function SubmitEvidenceForm({
   };
 
   if (!isConnected) {
-    return <p style={{ color: 'var(--text-muted)' }}>Connect a wallet to submit evidence.</p>;
+    return <p className="text-text-muted text-body-sm">Connect a wallet to submit evidence.</p>;
   }
 
-  const inputStyle = {
-    padding: '0.5rem',
-    background: 'var(--surface-container-lowest)',
-    color: 'inherit',
-    border: '1px solid var(--border-subtle)',
-  } as const;
-
   return (
-    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '480px' }}>
-      <select value={positionIndex} onChange={(e) => setPositionIndex(Number(e.target.value))} style={inputStyle}>
+    <form onSubmit={submit} className="flex flex-col gap-stack-sm max-w-md">
+      <select value={positionIndex} onChange={(e) => setPositionIndex(Number(e.target.value))} className={inputClass}>
         {positions.map((p, i) => (
           <option key={p.contractPositionId} value={i}>
             Supports: {p.label}
           </option>
         ))}
       </select>
-      <input type="url" placeholder="Source URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} style={inputStyle} required />
-      <input type="text" placeholder="Source title" value={sourceTitle} onChange={(e) => setSourceTitle(e.target.value)} style={inputStyle} required />
-      <input type="text" placeholder="Publisher" value={publisher} onChange={(e) => setPublisher(e.target.value)} style={inputStyle} required />
-      <select value={sourceType} onChange={(e) => setSourceType(e.target.value)} style={inputStyle}>
+      <input type="url" placeholder="Source URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className={inputClass} required />
+      <input type="text" placeholder="Source title" value={sourceTitle} onChange={(e) => setSourceTitle(e.target.value)} className={inputClass} required />
+      <input type="text" placeholder="Publisher" value={publisher} onChange={(e) => setPublisher(e.target.value)} className={inputClass} required />
+      <select value={sourceType} onChange={(e) => setSourceType(e.target.value)} className={inputClass}>
         {[
           'PRIMARY_SOURCE',
           'OFFICIAL_REPORT',
@@ -160,21 +161,16 @@ export function SubmitEvidenceForm({
         placeholder="How does this evidence support the position? (min 20 chars)"
         value={summary}
         onChange={(e) => setSummary(e.target.value)}
-        style={{ ...inputStyle, minHeight: '80px' }}
+        className={`${inputClass} min-h-[80px]`}
         required
       />
-      <input type="text" placeholder="Stake amount in GEN" value={amount} onChange={(e) => setAmount(e.target.value)} style={inputStyle} required />
-      <button
-        type="submit"
-        disabled={status === 'pending' || status === 'confirming'}
-        style={{ padding: '0.5rem', background: 'var(--primary-container)', color: 'var(--on-primary-container)', border: 'none', borderRadius: 'var(--radius-md)' }}
-      >
+      <input type="text" placeholder="Stake amount in GEN" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputClass} required />
+      <button type="submit" disabled={status === 'pending' || status === 'confirming'} className={buttonClass}>
         {status === 'pending' && 'Submitting...'}
         {status === 'confirming' && 'Waiting for finality...'}
         {(status === 'idle' || status === 'success' || status === 'error') && 'Submit Evidence'}
       </button>
-      {status === 'success' && <p style={{ color: 'var(--verified)', fontSize: '0.875rem' }}>Confirmed: {txHash}</p>}
-      {error && <p style={{ color: 'var(--slashed)', fontSize: '0.875rem' }}>{error}</p>}
+      <TxStatus status={status} error={error} txHash={txHash} />
     </form>
   );
 }
