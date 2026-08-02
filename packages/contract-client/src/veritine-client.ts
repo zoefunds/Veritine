@@ -82,8 +82,8 @@ export class VeritineWriteClient {
     positionLabelsJson: string;
     participationDeadlineTs: number;
     evidenceDeadlineTs: number;
-    minPositionStakeWei: string;
-    minEvidenceStakeWei: string;
+    minPositionStakeWei: bigint;
+    minEvidenceStakeWei: bigint;
     valueWei?: bigint;
   }) {
     const submitted = await writeVeritine(

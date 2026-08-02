@@ -49,8 +49,8 @@ export default function CreateDisputePage(): React.ReactElement {
         positionLabelsJson: JSON.stringify([positionA, positionB]),
         participationDeadlineTs,
         evidenceDeadlineTs,
-        minPositionStakeWei: minPositionWei.toString(),
-        minEvidenceStakeWei: minEvidenceWei.toString(),
+        minPositionStakeWei: minPositionWei,
+        minEvidenceStakeWei: minEvidenceWei,
       }),
     );
   };
