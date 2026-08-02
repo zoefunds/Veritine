@@ -1,3 +1,5 @@
+import { ConnectWalletButton } from '../components/ConnectWalletButton';
+
 export default function HomePage(): React.ReactElement {
   return (
     <main
@@ -7,7 +9,7 @@ export default function HomePage(): React.ReactElement {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '1rem',
+        gap: '1.5rem',
         textAlign: 'center',
         padding: '2rem',
       }}
@@ -16,6 +18,7 @@ export default function HomePage(): React.ReactElement {
       <p style={{ color: 'var(--text-muted)', maxWidth: '32rem' }}>
         A Staked Knowledge War. Foundation stage - the full landing page ships in Phase 10.
       </p>
+      <ConnectWalletButton />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { loadBackendEnv } from '@veritine/shared-config';
 import { AppModule } from './app.module';
 
@@ -8,6 +9,7 @@ async function bootstrap(): Promise<void> {
   const env = loadBackendEnv();
 
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
   app.enableCors({ origin: env.FRONTEND_URL, credentials: true });
   app.setGlobalPrefix('api/v1');
 

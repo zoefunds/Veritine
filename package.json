@@ -26,5 +26,10 @@
   },
   "dependencies": {
     "@prisma/client": "5.22.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@wagmi/connectors": "6.2.0"
+    }
   }
 }

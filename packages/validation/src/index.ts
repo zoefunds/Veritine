@@ -60,3 +60,5 @@ export const stakePositionSchema = z.object({
 });
 
 export type StakePositionInput = z.infer<typeof stakePositionSchema>;
+
+export * from './auth-schemas';

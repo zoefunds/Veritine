@@ -42,6 +42,8 @@ const frontendEnvSchema = z.object({
   NEXT_PUBLIC_GENLAYER_NETWORK: z.string().min(1),
   NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS: z.string().optional(),
   NEXT_PUBLIC_GENLAYER_CHAIN_ID: z.string().optional(),
+  NEXT_PUBLIC_REOWN_PROJECT_ID: z.string().min(1, 'NEXT_PUBLIC_REOWN_PROJECT_ID is required for wallet connect'),
+  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 });
 
 export type FrontendEnv = z.infer<typeof frontendEnvSchema>;

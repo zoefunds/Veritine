@@ -376,6 +376,8 @@ const frontendEnvSchema = z.object({
   NEXT_PUBLIC_GENLAYER_NETWORK: z.string().min(1),
   NEXT_PUBLIC_GENLAYER_CONTRACT_ADDRESS: z.string().optional(),
   NEXT_PUBLIC_GENLAYER_CHAIN_ID: z.string().optional(),
+  NEXT_PUBLIC_REOWN_PROJECT_ID: z.string().min(1, 'NEXT_PUBLIC_REOWN_PROJECT_ID is required for wallet connect'),
+  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 });
 
 export type FrontendEnv = z.infer<typeof frontendEnvSchema>;
@@ -547,6 +549,7 @@ FILES["apps/api/nest-cli.json"] = """{
 
 FILES["apps/api/src/main.ts"] = """import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { loadBackendEnv } from '@veritine/shared-config';
 import { AppModule } from './app.module';
 
@@ -555,6 +558,7 @@ async function bootstrap(): Promise<void> {
   const env = loadBackendEnv();
 
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
   app.enableCors({ origin: env.FRONTEND_URL, credentials: true });
   app.setGlobalPrefix('api/v1');
 
@@ -666,6 +670,19 @@ FILES["apps/web/next.config.js"] = """/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@veritine/shared-types', '@veritine/shared-config'],
+  webpack: (config) => {
+    // wagmi's bundled Base Account / Coinbase Smart Wallet connector pulls
+    // in @coinbase/cdp-sdk, which in turn references optional x402 payment
+    // packages we don't install (we only need standard injected/WalletConnect
+    // wallets - MetaMask, Rainbow, Zerion). Aliasing these out avoids a
+    // module-not-found build failure without disabling wallet connect itself.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@coinbase/cdp-sdk': false,
+      '@base-org/account': false,
+    };
+    return config;
+  },
 };
 
 module.exports = nextConfig;
