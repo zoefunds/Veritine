@@ -1,0 +1,62 @@
+/* Veritine design tokens - "Obsidian Registry" system.
+   Derived from the design prototype at
+   ~/Documents/design/stitch_compact_dark_mode_ui/DESIGN.md (reference
+   only, not copied verbatim - values re-declared here as the canonical
+   Veritine tokens). */
+
+:root {
+  --surface: #16181d;
+  --surface-dim: #121315;
+  --surface-bright: #38393b;
+  --surface-container-lowest: #0d0e10;
+  --surface-container-low: #1b1c1e;
+  --surface-container: #1f2022;
+  --surface-container-high: #292a2c;
+  --surface-container-highest: #343537;
+
+  --on-surface: #e3e2e5;
+  --on-surface-variant: #c3c6d7;
+  --outline: #8d90a0;
+  --outline-variant: #434655;
+  --border-subtle: rgba(148, 163, 184, 0.12);
+
+  --primary: #b4c5ff;
+  --on-primary: #002a78;
+  --primary-container: #2563eb;
+  --on-primary-container: #eeefff;
+
+  --secondary: #adc6ff;
+  --tertiary: #ffb596;
+
+  --verified: #10b981;
+  --slashed: #ef4444;
+  --pending: #f59e0b;
+
+  --background: #0b0c0e;
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background-color: var(--background);
+  color: var(--on-surface);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

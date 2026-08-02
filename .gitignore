@@ -44,3 +44,4 @@ coverage/
 
 # Fly
 fly.toml.bak
+apps/web/tsconfig.tsbuildinfo

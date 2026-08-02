@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" width="160" height="32">
+  <rect width="32" height="32" rx="6" fill="#0B0C0E"/>
+  <path d="M8 9 L16 24 L24 9" stroke="#B4C5FF" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="16" cy="9" r="2" fill="#10B981"/>
+  <text x="40" y="22" font-family="Geist, Inter, sans-serif" font-size="18" font-weight="700" fill="#E3E2E5">Veritine</text>
+</svg>
