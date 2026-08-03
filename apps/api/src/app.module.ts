@@ -7,6 +7,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { IndexerModule } from './modules/indexer/indexer.module';
 import { DisputesModule } from './modules/disputes/disputes.module';
+import { ResolverModule } from './modules/resolver/resolver.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DisputesModule } from './modules/disputes/disputes.module';
     AuthModule,
     IndexerModule,
     DisputesModule,
+    ResolverModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

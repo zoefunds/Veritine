@@ -37,6 +37,14 @@ Set via `fly secrets set KEY=value --app veritine-api`:
   is intentionally *not* gated by this — see
   `apps/api/src/modules/indexer/indexer.controller.ts`.
 - `JWT_SECRET`, `SESSION_SECRET` — auth.
+- `RESOLVER_PRIVATE_KEY` — a dedicated operational hot wallet's private
+  key (hex, `0x`-prefixed), used by `ResolverService` to automatically
+  call the permissionless `request_adjudication` once a dispute's
+  evidence deadline passes. See
+  `docs/decisions/0004-automated-adjudication-resolver.md` for the full
+  rationale and key-custody notes. Fund this wallet's address with a
+  small amount of GEN for gas; if unset, the resolver no-ops and
+  adjudication falls back to the manual "Request Adjudication" button.
 
 ### Deploying
 

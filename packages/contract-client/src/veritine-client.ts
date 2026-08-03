@@ -8,10 +8,12 @@ import type { Dispute, EvidenceSubmission } from '@veritine/shared-types';
 import { createReadClient, readVeritine, type ReadClient } from './read-client.js';
 import {
   createWriteClient,
+  createServerWriteClient,
   writeVeritine,
   waitForFinality,
   type WriteClient,
   type WriteClientOptions,
+  type ServerWriteClientOptions,
 } from './write-client.js';
 
 export class VeritineReadClient {
@@ -86,8 +88,15 @@ export class VeritineWriteClient {
   private readonly write: WriteClient;
   private readonly read: ReadClient;
 
-  constructor(options: WriteClientOptions) {
-    this.write = createWriteClient(options);
+  /**
+   * Accepts either a browser-wallet-bound config (account + EIP-1193
+   * provider) or a server-held private key for operational bots (e.g.
+   * the adjudication resolver) - see createServerWriteClient's docstring
+   * for why the latter must never be used for anything representing a
+   * user's own funds/actions.
+   */
+  constructor(options: WriteClientOptions | ServerWriteClientOptions) {
+    this.write = 'privateKey' in options ? createServerWriteClient(options) : createWriteClient(options);
     this.read = createReadClient(options);
   }
 

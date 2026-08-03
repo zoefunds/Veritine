@@ -1,4 +1,4 @@
-import { createClient } from 'genlayer-js';
+import { createClient, createAccount } from 'genlayer-js';
 import { TransactionStatus, type Hash } from 'genlayer-js/types';
 import { getContractConfig } from './config.js';
 
@@ -21,7 +21,34 @@ export function createWriteClient(options: WriteClientOptions) {
   return { client, config };
 }
 
-export type WriteClient = ReturnType<typeof createWriteClient>;
+export interface ServerWriteClientOptions {
+  contractAddress: string | undefined;
+  network: string | undefined;
+  /** Hex-encoded private key (with 0x prefix) for a server-held hot wallet. */
+  privateKey: `0x${string}`;
+}
+
+/**
+ * A write-capable client for backend/server use - no browser wallet
+ * involved. Signs locally with the given private key (via genlayer-js's
+ * createAccount, a thin wrapper over viem's privateKeyToAccount) and
+ * broadcasts directly to the chain's RPC endpoint. Intended for
+ * operational bots (e.g. the adjudication resolver) that need to submit
+ * permissionless writes automatically - never use this for anything
+ * representing a user's own funds/actions, only for the platform's own
+ * dedicated operational wallet.
+ */
+export function createServerWriteClient(options: ServerWriteClientOptions) {
+  const config = getContractConfig(options);
+  const account = createAccount(options.privateKey);
+  const client = createClient({
+    chain: config.chain,
+    account: account as never,
+  });
+  return { client, config };
+}
+
+export type WriteClient = ReturnType<typeof createWriteClient> | ReturnType<typeof createServerWriteClient>;
 
 export interface SubmittedTransaction {
   hash: `0x${string}`;
