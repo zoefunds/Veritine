@@ -3,7 +3,7 @@
 Veritine - Stage 08: Contract integration.
 
 Wires the deployed Veritine Intelligent Contract (StudioNet address
-0xB1Cd4426003d7B443866294B6df55F085fdf3443) into the frontend and
+0xe079aEaa565bca181FDfa0Cc275398701E23B0B5) into the frontend and
 backend via a shared @veritine/contract-client package built on
 genlayer-js. Adds a live read on the homepage and a backend indexer
 module that periodically syncs on-chain dispute state into Postgres.

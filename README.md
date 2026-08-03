@@ -13,12 +13,20 @@ Full product/architecture spec: see [docs/architecture/PHASE_1_ARCHITECTURE.md](
 
 ## Status
 
-Phases 0–12 of the build process complete (through security hardening and
-testing/production validation). Deployment (Phase 13) is next. See
-`docs/decisions/` for the running log of architectural decisions.
+Phases 0–13 of the build process complete: design, contract, backend,
+frontend, security hardening, testing/production validation, and
+deployment. See `docs/decisions/` for the running log of architectural
+decisions.
 
-**Deployed contract**: `0xB1Cd4426003d7B443866294B6df55F085fdf3443` on
-GenLayer StudioNet (chain id `61999`).
+**Live deployment:**
+
+- Frontend: [veritine.vercel.app](https://veritine.vercel.app) (Vercel)
+- Backend API: [veritine-api.fly.dev](https://veritine-api.fly.dev) (Fly.io, always-on)
+- Contract: `0xe079aEaa565bca181FDfa0Cc275398701E23B0B5` on GenLayer
+  StudioNet (chain id `61999`)
+
+See `docs/deployment/DEPLOYMENT.md` for the full deployment process,
+including how to rotate the contract address if it's redeployed.
 
 ## Repository structure
 

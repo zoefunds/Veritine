@@ -59,6 +59,17 @@ issue until a fix has shipped.
   key returns `401`; the rate limiter counts every attempt, including
   rejected ones, so an attacker cannot bypass throttling by intentionally
   failing auth first.
+- **`POST /indexer/sync/:contractDisputeId`** (added post-launch, see
+  `docs/decisions/0003-phase-13-deployment-and-post-launch-fixes.md`) is
+  deliberately *not* behind `InternalApiKeyGuard` — unlike `/sync`, its
+  cost is fixed at exactly a handful of RPC calls regardless of platform
+  size (it syncs one dispute, not every dispute), so the quota-exhaustion
+  risk above doesn't apply the same way. It's still rate-limited
+  (`20/min` per IP) and input-validated (rejects anything that isn't a
+  non-negative integer) to prevent casual abuse. The frontend calls it
+  right after a user's own write finalizes, so a new dispute/stake/
+  evidence submission is visible immediately instead of waiting on the
+  5-minute cron.
 - **Input validation** — `zod` schemas for every write endpoint
   (`@veritine/validation`); read endpoints validate enum membership for
   status/category filters and clamp pagination bounds server-side.
