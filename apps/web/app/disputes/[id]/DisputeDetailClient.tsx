@@ -225,3 +225,59 @@ export function SubmitEvidenceForm({
     </form>
   );
 }
+
+const ADJUDICABLE_STATUSES = new Set(['ACTIVE', 'EVIDENCE_CLOSED']);
+
+/**
+ * request_adjudication is permissionless on the contract - anyone can
+ * call it once the evidence deadline has passed - but nothing in the UI
+ * ever called it, so there was no way for a user to actually trigger
+ * settlement short of a manual RPC call. This surfaces it as a real
+ * button once the deadline has passed and the dispute hasn't already
+ * been settled.
+ */
+export function RequestAdjudicationButton({
+  disputeContractId,
+  evidenceDeadline,
+  status,
+}: {
+  disputeContractId: string;
+  evidenceDeadline: string;
+  status: string;
+}): React.ReactElement | null {
+  const router = useRouter();
+  const { run, status: writeStatus, error, txHash } = useVeritineWrite();
+  const deadlinePassed = Date.now() > new Date(evidenceDeadline).getTime();
+
+  if (!deadlinePassed || !ADJUDICABLE_STATUSES.has(status)) {
+    return null;
+  }
+
+  const submit = async () => {
+    const submitted = await run((client) => client.requestAdjudication(Number(disputeContractId)));
+    if (submitted) await syncAndRefresh(disputeContractId, router);
+  };
+
+  return (
+    <div className="bg-surface ghost-border p-stack-md rounded-lg border-t-4 border-tertiary">
+      <h3 className="font-label-caps text-label-caps text-tertiary mb-stack-sm">Evidence Window Closed</h3>
+      <p className="text-text-muted text-body-sm mb-stack-md">
+        This dispute&apos;s evidence deadline has passed and it hasn&apos;t been settled yet.
+        Adjudication is permissionless &mdash; anyone can trigger it, including you.
+      </p>
+      <button
+        type="button"
+        onClick={submit}
+        disabled={writeStatus === 'pending' || writeStatus === 'confirming'}
+        className={buttonClass}
+      >
+        {writeStatus === 'pending' && 'Submitting...'}
+        {writeStatus === 'confirming' && 'Running adjudication...'}
+        {(writeStatus === 'idle' || writeStatus === 'success' || writeStatus === 'error') && 'Request Adjudication'}
+      </button>
+      <div className="mt-stack-sm">
+        <TxStatus status={writeStatus} error={error} txHash={txHash} />
+      </div>
+    </div>
+  );
+}

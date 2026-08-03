@@ -2,7 +2,7 @@ import { Navbar } from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
 import { formatGen } from '../../../lib/format-gen';
 import { apiFetch } from '../../../lib/api-client';
-import { StakePositionForm, SubmitEvidenceForm } from './DisputeDetailClient';
+import { StakePositionForm, SubmitEvidenceForm, RequestAdjudicationButton } from './DisputeDetailClient';
 
 // See apps/web/app/disputes/page.tsx for why this uses a short revalidate
 // window instead of force-dynamic.
@@ -225,6 +225,14 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
           </div>
 
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-stack-lg">
+            {!dispute.adjudication && (
+              <RequestAdjudicationButton
+                disputeContractId={dispute.id}
+                evidenceDeadline={dispute.evidenceDeadline}
+                status={dispute.status}
+              />
+            )}
+
             <div className="bg-surface ghost-border p-stack-md rounded-lg overflow-hidden border-t-4 border-primary">
               <div className="flex items-center gap-stack-sm mb-stack-md">
                 <div className="bg-primary/20 p-2 rounded">
