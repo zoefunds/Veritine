@@ -75,8 +75,15 @@ export function StakePositionForm({
     } catch {
       return;
     }
-    const submitted = await run((client) => client.stakePosition(Number(disputeContractId), positionIndex, weiAmount));
-    if (submitted) await syncAndRefresh(disputeContractId, router);
+    await run((client) => client.stakePosition(Number(disputeContractId), positionIndex, weiAmount));
+    // Always sync, even when the write is reported as failed - the
+    // dispute id is already known here (never guessed from a success
+    // assumption), so this is a safe, harmless refresh either way. A
+    // write can be misreported as failed (see waitForFinality's
+    // docstring) while having actually succeeded on-chain; gating this
+    // sync behind `submitted` left the UI stuck showing stale state
+    // for up to the next 5-minute cron tick in that case.
+    await syncAndRefresh(disputeContractId, router);
   };
 
   if (!isConnected) {
@@ -151,7 +158,7 @@ export function SubmitEvidenceForm({
     } catch {
       return;
     }
-    const submitted = await run((client) =>
+    await run((client) =>
       client.submitEvidence({
         disputeId: Number(disputeContractId),
         positionIndex,
@@ -164,7 +171,14 @@ export function SubmitEvidenceForm({
         valueWei: weiAmount,
       }),
     );
-    if (submitted) await syncAndRefresh(disputeContractId, router);
+    // Always sync, even when the write is reported as failed - the
+    // dispute id is already known here (never guessed from a success
+    // assumption), so this is a safe, harmless refresh either way. A
+    // write can be misreported as failed (see waitForFinality's
+    // docstring) while having actually succeeded on-chain; gating this
+    // sync behind `submitted` left the UI stuck showing stale state
+    // for up to the next 5-minute cron tick in that case.
+    await syncAndRefresh(disputeContractId, router);
   };
 
   if (!isConnected) {
@@ -254,8 +268,15 @@ export function RequestAdjudicationButton({
   }
 
   const submit = async () => {
-    const submitted = await run((client) => client.requestAdjudication(Number(disputeContractId)));
-    if (submitted) await syncAndRefresh(disputeContractId, router);
+    await run((client) => client.requestAdjudication(Number(disputeContractId)));
+    // Always sync, even when the write is reported as failed - the
+    // dispute id is already known here (never guessed from a success
+    // assumption), so this is a safe, harmless refresh either way. A
+    // write can be misreported as failed (see waitForFinality's
+    // docstring) while having actually succeeded on-chain; gating this
+    // sync behind `submitted` left the UI stuck showing stale state
+    // for up to the next 5-minute cron tick in that case.
+    await syncAndRefresh(disputeContractId, router);
   };
 
   return (

@@ -59,7 +59,31 @@ export default function CreateDisputePage(): React.ReactElement {
       }),
     );
 
-    if (!submitted) return;
+    if (!submitted) {
+      // `run()` reports failure whenever waitForFinality's self-reported
+      // `succeeded` flag reads false - which can be wrong (see its
+      // docstring) while the dispute was actually created on-chain. We
+      // can't safely assume success and navigate here the way the
+      // success path below does (dispute_count - 1 would point at the
+      // wrong dispute, or an unrelated existing one, if this really did
+      // fail), so we stay on the form with the error shown - but still
+      // fire a background sync of whatever the latest dispute id
+      // currently is, best-effort, so that IF this was a misreport, the
+      // explorer has already caught up by the time the user checks it
+      // instead of waiting up to 5 minutes for the next cron tick.
+      // Harmless no-op if the write genuinely failed (re-syncs an
+      // already-current dispute).
+      void (async () => {
+        try {
+          const readClient = getVeritineReadClient();
+          const count = await readClient.getDisputeCount();
+          if (count > 0) await apiFetch(`/indexer/sync/${count - 1}`, { method: 'POST' }).catch(() => null);
+        } catch {
+          // best-effort only
+        }
+      })();
+      return;
+    }
 
     // The chain write succeeded, but the dispute won't be visible in the
     // explorer until it's indexed into Postgres - the cron sync runs
