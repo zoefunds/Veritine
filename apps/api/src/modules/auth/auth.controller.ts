@@ -19,6 +19,24 @@ import type { User } from '@prisma/client';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+/**
+ * Frontend (Vercel) and backend (Fly.io) are on different domains, which
+ * makes every browser fetch from the frontend to this API a cross-site
+ * request. `SameSite=Strict` (or the express cookie-serialize default,
+ * Lax) tells the browser to never attach the cookie to a cross-site
+ * fetch/XHR - only `SameSite=None` does. The cookie was still being SET
+ * fine (that's a CORS concern, already handled by
+ * `app.enableCors({ credentials: true })` in main.ts) but the browser
+ * silently dropped it on every subsequent request, so nothing after
+ * /auth/verify's own response body ever saw the user as signed in -
+ * hence "signed in" reverting to "Sign in" on every reload. `SameSite=None`
+ * requires `Secure`, so this only applies in production; local dev runs
+ * both apps on localhost, which is same-site, so Strict is fine there.
+ */
+const sessionCookieOptions = isProduction
+  ? ({ httpOnly: true, secure: true, sameSite: 'none' as const, path: '/' })
+  : ({ httpOnly: true, secure: false, sameSite: 'strict' as const, path: '/' });
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -42,13 +60,7 @@ export class AuthController {
 
     const { user, token, expiresAt } = await this.authService.verifySignIn(parsed.data);
 
-    res.cookie(SESSION_COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'strict',
-      expires: expiresAt,
-      path: '/',
-    });
+    res.cookie(SESSION_COOKIE_NAME, token, { ...sessionCookieOptions, expires: expiresAt });
 
     return {
       id: user.id,
@@ -63,7 +75,7 @@ export class AuthController {
     if (token) {
       await this.authService.revokeSession(token);
     }
-    res.clearCookie(SESSION_COOKIE_NAME, { path: '/' });
+    res.clearCookie(SESSION_COOKIE_NAME, sessionCookieOptions);
     return { success: true };
   }
 
