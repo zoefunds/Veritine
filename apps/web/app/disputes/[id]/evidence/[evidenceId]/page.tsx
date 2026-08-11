@@ -27,7 +27,9 @@ interface DisputeDetail {
 
 async function fetchDispute(id: string): Promise<DisputeDetail | null> {
   try {
-    return await apiFetch<DisputeDetail>(`/disputes/${id}`);
+    // See the same fetchDispute in disputes/[id]/page.tsx for why this is
+    // no-store rather than the usual 5s revalidate window.
+    return await apiFetch<DisputeDetail>(`/disputes/${id}`, { cache: 'no-store' });
   } catch {
     return null;
   }

@@ -37,7 +37,16 @@ interface DisputeDetail {
 
 async function fetchDispute(id: string): Promise<DisputeDetail | null> {
   try {
-    const dispute = await apiFetch<DisputeDetail>(`/disputes/${id}`);
+    // cache: 'no-store', not the usual 5s revalidate window - this route
+    // was observed serving a stale cached 200 (a dispute that existed on
+    // a previous contract deployment) indefinitely after the backing DB
+    // row was gone, well past several multiples of the revalidate window.
+    // Whether that's Vercel's fetch Data Cache surviving a deploy or a
+    // stale-while-revalidate edge case, a wrong dispute ID silently
+    // resolving to a DIFFERENT dispute's data - worst of all across a
+    // contract migration - is a correctness bug, not a minor staleness
+    // one. This route needs a guaranteed-fresh read every time.
+    const dispute = await apiFetch<DisputeDetail>(`/disputes/${id}`, { cache: 'no-store' });
     // Defensive fallback: these two fields were briefly missing from the
     // API response (see disputes.controller.ts) after being added to this
     // interface, which crashed the whole page via formatGen(undefined).
