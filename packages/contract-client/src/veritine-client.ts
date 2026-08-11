@@ -202,4 +202,41 @@ export class VeritineWriteClient {
     const submitted = await writeVeritine(this.write, 'withdraw', [amountWei]);
     return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
   }
+
+  /**
+   * Moves accrued treasury funds (protocol fees + the treasury's share of
+   * slashed evidence stakes) into the treasury address's withdrawable
+   * balance. Deliberately permissionless on the contract (see
+   * sweep_treasury's docstring) - anyone can call it, not just the owner -
+   * only where the funds land (set_treasury_address) is owner-gated.
+   */
+  async sweepTreasury() {
+    const submitted = await writeVeritine(this.write, 'sweep_treasury', []);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
+
+  async pause() {
+    const submitted = await writeVeritine(this.write, 'pause', []);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
+
+  async unpause() {
+    const submitted = await writeVeritine(this.write, 'unpause', []);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
+
+  async setFees(protocolFeeBps: number, slashWinnerShareBps: number) {
+    const submitted = await writeVeritine(this.write, 'set_fees', [protocolFeeBps, slashWinnerShareBps]);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
+
+  async setMinimums(minPositionStakeWei: bigint, minEvidenceStakeWei: bigint) {
+    const submitted = await writeVeritine(this.write, 'set_minimums', [minPositionStakeWei, minEvidenceStakeWei]);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
+
+  async setTreasuryAddress(newTreasuryAddress: string) {
+    const submitted = await writeVeritine(this.write, 'set_treasury_address', [newTreasuryAddress]);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
 }
