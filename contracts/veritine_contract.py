@@ -250,7 +250,12 @@ class Dispute:
     conclusion: str               # "" until adjudicated
     reasoning_summary: str
     adjudicated_at: u64
-    payouts_settled: bool         # fee/treasury/slash bookkeeping done once
+    # Two separate flags, not one - position-fee and evidence-slash-treasury
+    # bookkeeping are economically independent one-time credits. A single
+    # shared flag meant whichever claim type (position or evidence) happened
+    # first for a dispute permanently blocked the other's treasury credit.
+    payouts_settled: bool
+    evidence_treasury_settled: bool
 
 
 @allow_storage
@@ -644,6 +649,7 @@ class Veritine(gl.Contract):
             )
             dispute.adjudicated_at = u64(max(0, now_ts))
             dispute.payouts_settled = True  # no fees/slashing on a timeout
+            dispute.evidence_treasury_settled = True
             self._log(int(dispute.id), "TIMEOUT", self.owner, 0, now_ts, "adjudication timeout")
 
     # ------------------------------------------------------------------------
@@ -1099,6 +1105,7 @@ Respond with ONLY a JSON object, no markdown:
             reasoning_summary="",
             adjudicated_at=u64(0),
             payouts_settled=False,
+            evidence_treasury_settled=False,
         )
         self.dispute_positions[did] = []
         positions = self.dispute_positions[did]
@@ -1298,6 +1305,7 @@ Respond with ONLY a JSON object, no markdown:
         dispute.reasoning_summary = "Cancelled before adjudication; all stakes are refundable."
         dispute.adjudicated_at = u64(max(0, now_ts))
         dispute.payouts_settled = True  # no fees/slashing on a cancellation
+        dispute.evidence_treasury_settled = True
         self._log(dispute_id, "CANCEL", sender, 0, now_ts, "")
 
     # ========================================================================
@@ -1561,6 +1569,13 @@ Respond with ONLY a JSON object, no markdown:
         after_slash = total_stake - (total_stake * slash_bps) // BPS_DENOMINATOR
         my_share_of_after_slash = (after_slash * my_stake) // total_stake
 
+        # Must run unconditionally, not only when the claimed item happens
+        # to be reward-eligible - a dispute where every piece of evidence
+        # was bad (none reward-eligible) still has a treasury share of its
+        # slashed stake, and the only claims ever made against it are for
+        # non-reward-eligible items. Idempotent per dispute either way.
+        self._settle_dispute_slash_treasury_share(int(evidence.dispute_id))
+
         base_payout = my_share_of_after_slash
         if bool(evidence.reward_eligible):
             reward_share = self._evidence_reward_share(evidence, my_stake, total_stake)
@@ -1568,13 +1583,39 @@ Respond with ONLY a JSON object, no markdown:
 
         return max(0, base_payout)
 
+    def _settle_dispute_slash_treasury_share(self, dispute_id: int) -> None:
+        """Credits the treasury's share of this dispute's total slashed
+        evidence stake to accrued_treasury_wei, exactly once per dispute
+        (guarded by evidence_treasury_settled - a flag dedicated to this,
+        separate from the position-side protocol fee's payouts_settled,
+        since those are two independent one-time credits and a shared flag
+        let whichever claim type happened first block the other forever)."""
+        dispute = self._get_dispute(dispute_id)
+        if dispute.evidence_treasury_settled:
+            return
+        evidence_ids = self.dispute_evidence_ids.get(u32(dispute_id))
+        if evidence_ids is None:
+            return
+        total_slashed = 0
+        for eid in evidence_ids:
+            item = self.evidence_store[eid]
+            item_total = int(item.total_stake_wei)
+            item_slash_bps = int(item.slash_bps)
+            total_slashed += (item_total * item_slash_bps) // BPS_DENOMINATOR
+        dispute.evidence_treasury_settled = True
+        if total_slashed <= 0:
+            return
+        winner_pool = (total_slashed * int(self.slash_winner_share_bps)) // BPS_DENOMINATOR
+        treasury_share = total_slashed - winner_pool
+        self.accrued_treasury_wei = u256(int(self.accrued_treasury_wei) + treasury_share)
+
     def _evidence_reward_share(self, evidence: Evidence, my_stake: int, my_evidence_total: int) -> int:
         """This evidence item's proportional share of the dispute-wide
         slashed-evidence reward pool, further divided among this item's
-        own stakers by their contribution. Computed lazily per claim
-        (no unbounded loop at adjudication time) — the dispute-wide pool
-        total is derived deterministically from already-stored evidence
-        records, so every caller computes the same number."""
+        own stakers by their contribution. Computed on every reward-eligible
+        claim (no unbounded loop at adjudication time) - the dispute-wide
+        pool total is derived deterministically from already-stored
+        evidence records, so every caller computes the same number."""
         dispute_id = int(evidence.dispute_id)
         evidence_ids = self.dispute_evidence_ids.get(u32(dispute_id))
         if evidence_ids is None:
@@ -1594,21 +1635,7 @@ Respond with ONLY a JSON object, no markdown:
             return 0
 
         winner_pool = (total_slashed * int(self.slash_winner_share_bps)) // BPS_DENOMINATOR
-        # Treasury share of the slashed pool is credited once, the first
-        # time any evidence claim is processed for this dispute, guarded
-        # by payouts_settled on the dispute itself so it can never double-credit.
-        dispute = self._get_dispute(dispute_id)
-        if not dispute.payouts_settled:
-            treasury_share = total_slashed - winner_pool
-            self.accrued_treasury_wei = u256(int(self.accrued_treasury_wei) + treasury_share)
-            dispute.payouts_settled = True
-
-        this_evidence_share_of_winner_pool = (
-            winner_pool * my_evidence_total
-        ) // total_reward_eligible_stake if int(evidence.reward_eligible) else 0
-        # Guard: only reward-eligible evidence items participate in the pool.
-        if not bool(evidence.reward_eligible):
-            return 0
+        this_evidence_share_of_winner_pool = (winner_pool * my_evidence_total) // total_reward_eligible_stake
 
         return (this_evidence_share_of_winner_pool * my_stake) // my_evidence_total
 

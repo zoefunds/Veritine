@@ -282,6 +282,17 @@ def test_fabricated_evidence_is_slashed_in_full(
     payout = contract.claim_evidence(evidence_id)
     assert payout == 0  # fully slashed
 
+    # The treasury's share of this 100%-slashed stake must still be
+    # credited even though no evidence in this dispute was reward-eligible
+    # to split the other 90% with - see _settle_dispute_slash_treasury_share.
+    evidence_stake = contract.get_evidence_stake(evidence_id, direct_bob)
+    total_slashed = evidence_stake["amount_wei"]  # bob's whole stake, 100% slashed
+    stats = contract.get_platform_stats()
+    config = contract.get_config()
+    expected_treasury_share = total_slashed - (total_slashed * config["slash_winner_share_bps"]) // 10000
+    assert stats["accrued_treasury_wei"] == expected_treasury_share
+    assert expected_treasury_share > 0
+
 
 def test_cancelled_dispute_refunds_position_stake_in_full(
     direct_vm, direct_deploy, direct_owner, direct_alice
