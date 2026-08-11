@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAccount, useSignMessage } from 'wagmi';
 import { buildSignInMessage } from '@veritine/shared-config';
 import { apiFetch } from '../lib/api-client';
@@ -25,6 +25,33 @@ export function useWalletAuth() {
   const [status, setStatus] = useState<AuthStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<AuthedUser | null>(null);
+
+  /**
+   * The backend already issues a long-lived httpOnly session cookie on
+   * /auth/verify, but this hook's `user` state resets to null on every
+   * mount - without this, the UI showed "Sign in" after every page
+   * reload even though the session cookie was still valid server-side.
+   * Restore the session from the cookie via /auth/me on mount, but only
+   * treat it as signed-in if it matches the wallet wagmi currently has
+   * connected - a stale session cookie for a previously connected
+   * address should not be presented as signed-in for a different one.
+   */
+  useEffect(() => {
+    if (!isConnected || !address) return;
+    let cancelled = false;
+    apiFetch<AuthedUser>('/auth/me')
+      .then((existing) => {
+        if (cancelled) return;
+        if (existing.primaryWalletAddress.toLowerCase() === address.toLowerCase()) {
+          setUser(existing);
+          setStatus('signed-in');
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [isConnected, address]);
 
   const signIn = useCallback(async () => {
     if (!isConnected || !address) {
