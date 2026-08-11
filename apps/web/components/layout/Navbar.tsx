@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ConnectWalletButton } from '../ConnectWalletButton';
+import { AdminNavLink } from './AdminNavLink';
 
 export function Navbar(): React.ReactElement {
   return (
@@ -22,6 +23,7 @@ export function Navbar(): React.ReactElement {
             <Link href="/stats" className="text-on-surface-variant font-body-md text-body-sm hover:text-primary transition-colors">
               Stats
             </Link>
+            <AdminNavLink />
           </div>
         </div>
         <ConnectWalletButton compact />
