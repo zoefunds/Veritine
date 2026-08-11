@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Navbar } from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
 import { formatGen } from '../../../lib/format-gen';
@@ -156,11 +157,17 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
 
             <div className="bg-surface ghost-border p-stack-md rounded">
               <h2 className="font-label-caps text-label-caps text-on-surface mb-stack-md">Stake on a Position</h2>
-              <StakePositionForm
-                disputeContractId={dispute.id}
-                positions={dispute.positions}
-                minStakeWei={dispute.minPositionStakeWei}
-              />
+              {dispute.status === 'ACTIVE' ? (
+                <StakePositionForm
+                  disputeContractId={dispute.id}
+                  positions={dispute.positions}
+                  minStakeWei={dispute.minPositionStakeWei}
+                />
+              ) : (
+                <p className="text-text-muted text-body-sm">
+                  This dispute is no longer accepting new stakes ({dispute.status.replace(/_/g, ' ').toLowerCase()}).
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-stack-md">
@@ -202,6 +209,9 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
                       <span>
                         <span className="font-label-caps text-primary">Stake:</span> {formatGen(item.totalStakeWei)} GEN
                       </span>
+                      <Link href={`/profile/${item.submitter}`} className="hover:text-primary transition-colors">
+                        <span className="font-label-caps">By:</span> {item.submitter.slice(0, 6)}...{item.submitter.slice(-4)}
+                      </Link>
                     </div>
                   </div>
                   <div className="text-right min-w-[140px]">
@@ -209,17 +219,29 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
                     <div className={`font-code-sm ${item.outcome ? OUTCOME_COLOR[item.outcome] : 'text-text-muted'}`}>
                       {item.outcome ? item.outcome.replace(/_/g, ' ') : 'Pending adjudication'}
                     </div>
+                    <Link
+                      href={`/disputes/${dispute.id}/evidence/${item.id}`}
+                      className="text-[11px] text-primary hover:underline mt-1 inline-block"
+                    >
+                      View details
+                    </Link>
                   </div>
                 </div>
               ))}
 
               <div className="bg-surface ghost-border p-stack-md rounded">
                 <h3 className="font-label-caps text-label-caps text-on-surface mb-stack-md">Submit Evidence</h3>
-                <SubmitEvidenceForm
-                  disputeContractId={dispute.id}
-                  positions={dispute.positions}
-                  minStakeWei={dispute.minEvidenceStakeWei}
-                />
+                {dispute.status === 'ACTIVE' ? (
+                  <SubmitEvidenceForm
+                    disputeContractId={dispute.id}
+                    positions={dispute.positions}
+                    minStakeWei={dispute.minEvidenceStakeWei}
+                  />
+                ) : (
+                  <p className="text-text-muted text-body-sm">
+                    The evidence registry is closed for this dispute ({dispute.status.replace(/_/g, ' ').toLowerCase()}).
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -304,9 +326,9 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
               <div className="space-y-stack-sm">
                 <div className="flex justify-between items-center text-body-sm">
                   <span className="text-on-surface-variant">Creator</span>
-                  <span className="font-code-sm text-on-surface">
+                  <Link href={`/profile/${dispute.creator}`} className="font-code-sm text-on-surface hover:text-primary transition-colors">
                     {dispute.creator.slice(0, 6)}...{dispute.creator.slice(-4)}
-                  </span>
+                  </Link>
                 </div>
                 <div className="flex justify-between items-center text-body-sm">
                   <span className="text-on-surface-variant">Evidence Count</span>

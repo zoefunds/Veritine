@@ -19,6 +19,9 @@ export function Navbar(): React.ReactElement {
             <Link href="/docs" className="text-on-surface-variant font-body-md text-body-sm hover:text-primary transition-colors">
               Docs
             </Link>
+            <Link href="/stats" className="text-on-surface-variant font-body-md text-body-sm hover:text-primary transition-colors">
+              Stats
+            </Link>
           </div>
         </div>
         <ConnectWalletButton compact />

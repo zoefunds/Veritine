@@ -66,6 +66,7 @@ export class DisputesController {
       evidenceDeadline: dispute.evidenceDeadline,
       creator: dispute.creator.primaryWalletAddress,
       positions: dispute.positions.map((p) => ({
+        id: p.id,
         contractPositionId: p.contractPositionId,
         label: p.label,
         totalStakeWei: p.totalStakeWei,

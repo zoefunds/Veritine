@@ -82,6 +82,21 @@ export class VeritineReadClient {
   getEvidenceOutcomeEconomics() {
     return readVeritine<Record<string, unknown>>(this.read, 'get_evidence_outcome_economics');
   }
+
+  getFlagCount(address: string) {
+    return readVeritine<number>(this.read, 'get_flag_count', [address]);
+  }
+
+  getEvidenceStake(evidenceId: number, address: string) {
+    return readVeritine<{ amount_wei: number; claimed: boolean }>(this.read, 'get_evidence_stake', [
+      evidenceId,
+      address,
+    ]);
+  }
+
+  getCategories() {
+    return readVeritine<string[]>(this.read, 'get_categories');
+  }
 }
 
 export class VeritineWriteClient {

@@ -61,12 +61,25 @@ export default async function DisputesPage({
               The authoritative registry of factual assertions undergoing decentralized adjudication.
             </p>
           </div>
-          <Link
-            href="/disputes/create"
-            className="bg-primary-container text-on-primary-container px-6 py-3 rounded font-bold text-body-sm hover:brightness-110 transition-all whitespace-nowrap"
-          >
-            Create Dispute
-          </Link>
+          <div className="flex items-center gap-stack-sm">
+            <form action="/disputes" method="GET" className="flex items-center">
+              {searchParams.status && <input type="hidden" name="status" value={searchParams.status} />}
+              {searchParams.category && <input type="hidden" name="category" value={searchParams.category} />}
+              <input
+                type="search"
+                name="search"
+                placeholder="Search disputes..."
+                defaultValue={searchParams.search ?? ''}
+                className="bg-surface-container-lowest border border-border-subtle text-body-sm px-3 py-2.5 rounded focus:outline-none focus:border-primary-container w-56"
+              />
+            </form>
+            <Link
+              href="/disputes/create"
+              className="bg-primary-container text-on-primary-container px-6 py-3 rounded font-bold text-body-sm hover:brightness-110 transition-all whitespace-nowrap"
+            >
+              Create Dispute
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter-desktop">

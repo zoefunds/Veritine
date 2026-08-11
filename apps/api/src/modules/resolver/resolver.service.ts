@@ -100,6 +100,18 @@ export class ResolverService {
             continue;
           }
           this.logger.log(`Adjudicated dispute ${id} ("${dispute.question}")`);
+          // Mark the row ADJUDICATING locally right away, before the indexer
+          // sync below runs. syncOneDisputeById does an RPC round-trip and
+          // can lag - without this, the next 5-minute tick's query (still
+          // seeing the old status + null adjudicationResult) re-selects the
+          // same dispute and calls request_adjudication again, which the
+          // contract correctly rejects as "not adjudicable" but which is
+          // pure noise. The subsequent sync overwrites this with whatever
+          // the contract's real post-adjudication status is.
+          await this.prisma.dispute.update({
+            where: { contractDisputeId: String(id) },
+            data: { status: DisputeStatus.ADJUDICATING },
+          });
           await this.indexerService.syncOneDisputeById(id);
         } catch (error) {
           this.logger.error(`Failed to adjudicate dispute ${id}: ${(error as Error).message}`);
