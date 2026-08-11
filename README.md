@@ -28,6 +28,37 @@ decisions.
 See `docs/deployment/DEPLOYMENT.md` for the full deployment process,
 including how to rotate the contract address if it's redeployed.
 
+## Pages
+
+- `/` — landing page.
+- `/disputes` — dispute explorer: status/category filters, free-text search.
+- `/disputes/create` — create a new dispute.
+- `/disputes/[id]` — dispute detail: positions, stake/evidence forms (open
+  only while the dispute is `ACTIVE`), evidence registry, adjudication panel,
+  request-adjudication button (permissionless, surfaces once the evidence
+  deadline has passed).
+- `/disputes/[id]/evidence/[evidenceId]` — single piece of evidence: source,
+  verdict, submitter, and the connected wallet's own stake/claim status.
+- `/profile/[address]` — any wallet's public activity: on-chain balance and
+  flag count, plus its position stakes and evidence submissions.
+- `/stats` — live platform stats, protocol config, and the evidence outcome
+  slash/reward table, read directly from the contract.
+- `/dashboard` — the connected wallet's own command center (balance,
+  withdraw, "My Activity").
+- `/docs` — product/protocol documentation.
+
+## Automated adjudication
+
+`apps/api/src/modules/resolver/resolver.service.ts` runs every 5 minutes and
+calls the contract's permissionless `request_adjudication` for any dispute
+past its evidence deadline. On a successful call it marks the dispute
+`ADJUDICATING` in Postgres immediately (rather than waiting on the indexer
+resync), so a lagging sync can't cause the next tick to re-request
+adjudication on the same dispute. Requires `RESOLVER_PRIVATE_KEY` (a
+dedicated platform hot wallet, never a user's own key); if unset, automated
+resolution is a no-op and adjudication can still be triggered manually via
+the frontend's "Request Adjudication" button.
+
 ## Repository structure
 
 - `apps/web` — Next.js (App Router) frontend, deployed to Vercel.
