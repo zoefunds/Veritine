@@ -4,6 +4,7 @@ import { Footer } from '../../../../../components/layout/Footer';
 import { formatGen } from '../../../../../lib/format-gen';
 import { apiFetch } from '../../../../../lib/api-client';
 import { MyStakeStatus } from './MyStakeStatus';
+import { BackEvidenceForm } from './BackEvidenceForm';
 
 export const revalidate = 5;
 
@@ -11,6 +12,8 @@ interface DisputeDetail {
   id: string;
   question: string;
   status: string;
+  evidenceDeadline: string;
+  minEvidenceStakeWei: string;
   positions: Array<{ id: string; contractPositionId: string; label: string }>;
   evidence: Array<{
     id: string;
@@ -139,6 +142,12 @@ export default async function EvidenceDetailPage({
           <div className="p-stack-sm border-t border-border-subtle">
             <MyStakeStatus evidenceContractId={evidence.id} />
           </div>
+
+          {dispute.status === 'ACTIVE' && new Date(dispute.evidenceDeadline).getTime() > Date.now() && (
+            <div className="p-stack-sm border-t border-border-subtle mt-stack-sm">
+              <BackEvidenceForm evidenceContractId={evidence.id} minStakeWei={dispute.minEvidenceStakeWei} />
+            </div>
+          )}
         </div>
       </main>
       <Footer />

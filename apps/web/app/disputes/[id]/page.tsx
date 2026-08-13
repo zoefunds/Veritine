@@ -3,7 +3,14 @@ import { Navbar } from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
 import { formatGen } from '../../../lib/format-gen';
 import { apiFetch } from '../../../lib/api-client';
-import { StakePositionForm, SubmitEvidenceForm, RequestAdjudicationButton } from './DisputeDetailClient';
+import {
+  StakePositionForm,
+  SubmitEvidenceForm,
+  RequestAdjudicationButton,
+  MyPositionStakes,
+  CancelDisputeButton,
+} from './DisputeDetailClient';
+import { ActivityLog } from './ActivityLog';
 
 // See apps/web/app/disputes/page.tsx for why this uses a short revalidate
 // window instead of force-dynamic.
@@ -179,6 +186,8 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
               )}
             </div>
 
+            <MyPositionStakes disputeContractId={dispute.id} positions={dispute.positions} status={dispute.status} />
+
             <div className="flex flex-col gap-stack-md">
               <div className="flex items-center justify-between border-b border-border-subtle pb-base">
                 <h2 className="font-label-caps text-label-caps text-on-surface tracking-widest">
@@ -263,6 +272,8 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
                 status={dispute.status}
               />
             )}
+
+            <CancelDisputeButton disputeContractId={dispute.id} creator={dispute.creator} status={dispute.status} />
 
             <div className="bg-surface ghost-border p-stack-md rounded-lg overflow-hidden border-t-4 border-primary">
               <div className="flex items-center gap-stack-sm mb-stack-md">
@@ -357,6 +368,8 @@ export default async function DisputeDetailPage({ params }: { params: { id: stri
                 </div>
               </div>
             </div>
+
+            <ActivityLog disputeContractId={dispute.id} />
           </div>
         </div>
       </main>

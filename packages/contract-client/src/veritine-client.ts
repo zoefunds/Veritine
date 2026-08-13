@@ -188,6 +188,18 @@ export class VeritineWriteClient {
     return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
   }
 
+  /**
+   * Creator-only before any other participation (no other position
+   * stakes, no evidence beyond the creator's own initial stake), or
+   * owner as an emergency override on any ACTIVE/EVIDENCE_CLOSED
+   * dispute. The contract enforces both cases - this is not a
+   * client-side-only check.
+   */
+  async cancelDispute(disputeId: number) {
+    const submitted = await writeVeritine(this.write, 'cancel_dispute', [disputeId]);
+    return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
+  }
+
   async claimPosition(disputeId: number, positionIndex: number) {
     const submitted = await writeVeritine(this.write, 'claim_position', [disputeId, positionIndex]);
     return { ...submitted, waitForFinality: () => waitForFinality(this.read, submitted.hash) };
